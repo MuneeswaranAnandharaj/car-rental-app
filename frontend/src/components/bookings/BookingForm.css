@@ -1,0 +1,331 @@
+.booking-wrapper {
+  min-height: calc(100vh - 64px);
+  background: var(--bg-secondary);
+  padding: 2rem;
+  transition: var(--transition);
+}
+
+.booking-container {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.booking-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.booking-header-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--accent-bg);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.booking-header-text h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.booking-header-text p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.booking-image {
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  background: var(--bg-tertiary);
+}
+
+.booking-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-details-card {
+  background: var(--bg-secondary);
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.car-details-card .car-info h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.car-details-card .car-info p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.car-details-card .car-price-display {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.car-details-card .car-price-display span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-input.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input::placeholder,
+.form-select::placeholder {
+  color: var(--text-light);
+}
+
+.form-readonly {
+  background: var(--bg-tertiary);
+  cursor: default;
+}
+
+.error-text {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+}
+
+.form-hint {
+  color: var(--text-light);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.cash-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  background: var(--accent-bg);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.cash-icon { font-size: 1.5rem; }
+
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.price-card {
+  background: var(--success-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--success-border);
+  margin-bottom: 1.5rem;
+}
+
+.price-card h3 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--success);
+  margin-bottom: 0.3rem;
+}
+
+.price-breakdown {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.alert {
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.alert-success {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+.alert-error {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  font-family: inherit;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-section {
+  margin-top: 1rem;
+}
+
+.stripe-section {
+  margin-top: 1.5rem;
+}
+
+.stripe-card-wrapper {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-input);
+  transition: all 0.2s ease;
+}
+
+.stripe-card-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.stripe-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.stripe-actions .submit-btn {
+  flex: 1;
+}
+
+.btn-back {
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-back:hover:not(:disabled) {
+  background: var(--border-color);
+}
+
+.btn-back:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.processing-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-text {
+  text-align: center;
+  padding: 6rem 2rem;
+  color: var(--loading-color);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+  .booking-wrapper { padding: 1rem; }
+  .booking-container { padding: 1.5rem; }
+  .date-row { grid-template-columns: 1fr; }
+  .car-details-card { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+}

@@ -1,0 +1,136 @@
+.car-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--border-color);
+}
+
+.car-image-container {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-tertiary);
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.car-card:hover .car-image {
+  transform: scale(1.05);
+}
+
+.car-body {
+  padding: 1.2rem 1.2rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-category-badge {
+  display: inline-block;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 0.2rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+  width: fit-content;
+}
+
+.car-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.car-year {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.8rem;
+}
+
+.car-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin-bottom: 0.8rem;
+}
+
+.car-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.car-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.car-meta-item .icon {
+  font-size: 0.9rem;
+}
+
+.car-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.car-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.car-price span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.view-details-btn {
+  padding: 0.55rem 1.2rem;
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-details-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.view-details-btn:active {
+  transform: translateY(0);
+}

@@ -8,18 +8,21 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email')
 
 
+from django.utils.html import format_html
+
+
 @admin.register(Car)
 class CarAdmin(admin.ModelAdmin):
-    list_display = ('make', 'model', 'year', 'category', 'price_per_day', 'is_available')
+    list_display = ('make', 'model', 'year', 'category', 'price_per_day', 'is_available', 'image_preview')
     list_filter = ('category', 'is_available', 'year')
     search_fields = ('make', 'model')
     list_editable = ('price_per_day', 'is_available')
     
     def image_preview(self, obj):
         if obj.image:
-            return f'<img src="{obj.image.url}" width="100" />'
+            return format_html('<img src="{}" width="80" style="border-radius:4px;" />', obj.image.url)
         return 'No image'
-    image_preview.allow_tags = True
+    image_preview.short_description = 'Image'
 
 
 @admin.register(Booking)

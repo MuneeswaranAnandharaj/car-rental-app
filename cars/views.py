@@ -43,18 +43,27 @@ class BookingViewSet(viewsets.ModelViewSet):
         return Booking.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        # Get additional fields from request data
         pickup_address = self.request.data.get('pickup_address', '')
         pickup_latitude = self.request.data.get('pickup_latitude')
         pickup_longitude = self.request.data.get('pickup_longitude')
+        phone = self.request.data.get('phone', '')
+        driver_license = self.request.data.get('driver_license', '')
         payment_method = self.request.data.get('payment_method', 'CREDIT_CARD')
+        payment_status = self.request.data.get('payment_status', 'PENDING')
+        payment_details = self.request.data.get('payment_details')
+        transaction_id = self.request.data.get('transaction_id', '')
         
         serializer.save(
             user=self.request.user,
             pickup_address=pickup_address,
             pickup_latitude=pickup_latitude,
             pickup_longitude=pickup_longitude,
+            phone=phone,
+            driver_license=driver_license,
             payment_method=payment_method,
+            payment_status=payment_status,
+            payment_details=payment_details,
+            transaction_id=transaction_id,
         )
     
     def destroy(self, request, *args, **kwargs):
@@ -98,3 +107,6 @@ def login_user(request):
             'email': user.email,
         })
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+

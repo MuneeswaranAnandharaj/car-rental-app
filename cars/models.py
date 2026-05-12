@@ -47,7 +47,7 @@ class Booking(models.Model):
     PAYMENT_METHODS = [
         ('CREDIT_CARD', 'Credit Card'),
         ('DEBIT_CARD', 'Debit Card'),
-        ('PAYPAL', 'PayPal'),
+        ('STRIPE', 'Stripe'),
         ('CASH', 'Cash on Pickup'),
         ('BANK_TRANSFER', 'Bank Transfer'),
     ]
@@ -67,8 +67,11 @@ class Booking(models.Model):
     pickup_address = models.CharField(max_length=255, blank=True, null=True)
     pickup_latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
     pickup_longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    driver_license = models.CharField(max_length=50, blank=True, null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='CREDIT_CARD')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='PENDING')
+    payment_details = models.JSONField(blank=True, null=True)
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

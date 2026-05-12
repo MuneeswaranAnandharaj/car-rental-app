@@ -1,0 +1,79 @@
+.map-picker {
+  margin: 2rem 0;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.map-container {
+  width: 100%;
+  height: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(56, 189, 248, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.map-container:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.selected-address {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+}
+
+.selected-address strong {
+  color: #38bdf8;
+  margin-right: 0.5rem;
+}
+
+/* Leaflet overrides for dark theme */
+.leaflet-container {
+  background: #0f172a;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(20px);
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(56, 189, 248, 0.2) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.8) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.leaflet-control-attribution a {
+  color: #38bdf8 !important;
+}
