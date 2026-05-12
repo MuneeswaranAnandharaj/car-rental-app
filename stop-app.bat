@@ -1,3 +1,0 @@
-@echo off
-echo Stopping Car Rental Application...
-powershell -ExecutionPolicy Bypass -File "D:\New folder\New folder (2)\carz\stop-app.ps1"
