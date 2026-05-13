@@ -23,6 +23,13 @@ const AppContent = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [logoutMsg, setLogoutMsg] = React.useState('');
+
+  const handleLogout = () => {
+    logout();
+    setLogoutMsg('Signed out successfully!');
+    setTimeout(() => setLogoutMsg(''), 3000);
+  };
 
   const scrollTo = (id) => {
     if (window.location.pathname === '/') {
@@ -59,7 +66,7 @@ const AppContent = () => {
             {isAuthenticated ? (
               <>
                 <span className="nav-user">Hi, {user?.username}</span>
-                <button onClick={logout} className="nav-btn">Sign Out</button>
+                <button onClick={handleLogout} className="nav-btn">Sign Out</button>
               </>
             ) : (
               <Link to="/auth" className="nav-btn">Sign In</Link>
@@ -72,6 +79,7 @@ const AppContent = () => {
       </nav>
 
       <ScrollToTop />
+      {logoutMsg && <div className="toast-message">{logoutMsg}</div>}
       <Routes>
         <Route path="/" element={<CarList />} />
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
