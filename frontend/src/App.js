@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import CarList from './components/cars/CarList';
 import BookingForm from './components/bookings/BookingForm';
 import MyBookings from './components/bookings/MyBookings';
@@ -13,17 +13,37 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/auth" />;
 };
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
 const AppContent = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const scrollTo = (id) => {
-    navigate('/');
-    setTimeout(() => {
+    if (window.location.pathname === '/') {
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
+  const goHome = (e) => {
+    e.preventDefault();
+    if (window.location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -32,7 +52,7 @@ const AppContent = () => {
         <div className="nav-content">
           <Link to="/" className="nav-logo">WheelWise</Link>
           <div className="nav-links">
-            <Link to="/" className="nav-link">Home</Link>
+            <a href="/" onClick={goHome} className="nav-link">Home</a>
             <Link to="/my-bookings" className="nav-link">My Bookings</Link>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features'); }} className="nav-link">About Us</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('contact'); }} className="nav-link">Contact</a>
@@ -51,6 +71,7 @@ const AppContent = () => {
         </div>
       </nav>
 
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<CarList />} />
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
