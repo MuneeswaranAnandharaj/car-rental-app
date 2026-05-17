@@ -1,0 +1,7 @@
+Django==6.0.4
+djangorestframework==3.17.1
+django-cors-headers==4.9.0
+mysqlclient==2.2.8
+pillow==12.2.0
+requests==2.34.0
+stripe==15.1.0
