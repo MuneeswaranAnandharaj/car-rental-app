@@ -6,6 +6,7 @@ import MyBookings from './components/bookings/MyBookings';
 import Auth from './components/common/Auth';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ToastProvider, useToast } from './context/ToastContext';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -23,12 +24,11 @@ const AppContent = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [logoutMsg, setLogoutMsg] = React.useState('');
+  const { showToast } = useToast();
 
   const handleLogout = () => {
     logout();
-    setLogoutMsg('Signed out successfully!');
-    setTimeout(() => setLogoutMsg(''), 3000);
+    showToast('Signed out successfully!');
   };
 
   const scrollTo = (id) => {
@@ -79,7 +79,6 @@ const AppContent = () => {
       </nav>
 
       <ScrollToTop />
-      {logoutMsg && <div className="toast-message">{logoutMsg}</div>}
       <Routes>
         <Route path="/" element={<CarList />} />
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
@@ -126,7 +125,9 @@ function App() {
     <Router>
       <AuthProvider>
         <ThemeProvider>
-          <AppContent />
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
         </ThemeProvider>
       </AuthProvider>
     </Router>

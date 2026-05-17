@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import './Auth.css';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -93,6 +95,7 @@ const Auth = () => {
         const data = await response.json();
         const userData = { username: formData.username, email: '' };
         login(data.token, userData);
+        showToast('Signed in successfully!');
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => navigate('/'), 1500);
       } else {
@@ -114,6 +117,7 @@ const Auth = () => {
           throw new Error(errorData.detail || 'Registration failed');
         }
 
+        showToast('Account created successfully! Please sign in.');
         setSuccess('Registration successful! Please login.');
         setIsLogin(true);
         setFormData({

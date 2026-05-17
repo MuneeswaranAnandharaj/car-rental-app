@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { carService, bookingService } from '../../services/api';
 import MapPicker from '../../components/common/MapPicker';
 import PaymentModal from '../../components/common/PaymentModal';
+import { useToast } from '../../context/ToastContext';
 import './BookingForm.css';
 
 const PaymentFields = ({ method, formData, handleChange, errors }) => {
@@ -92,7 +93,8 @@ const getPaymentDetails = (method, formData) => {
 
 const BookingForm = () => {
   const { carId } = useParams();
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
+  const { showToast } = useToast();  
   
   const [car, setCar] = useState(null);
   const [formData, setFormData] = useState({
@@ -212,6 +214,7 @@ const BookingForm = () => {
         payment_status: 'COMPLETED',
         transaction_id: txnId,
       });
+      showToast('Booking confirmed successfully!');
       setSuccess(true);
       setTimeout(() => navigate('/my-bookings'), 2000);
     } catch (err) {
