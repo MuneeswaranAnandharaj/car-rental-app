@@ -5,7 +5,6 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Add token to requests if available
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Token ${token}`;
@@ -16,6 +15,9 @@ export const carService = {
   getAllCars: () => api.get('/cars/'),
   getAvailableCars: () => api.get('/cars/available/'),
   getCarById: (id) => api.get(`/cars/${id}/`),
+  createCar: (data) => api.post('/cars/', data),
+  updateCar: (id, data) => api.patch(`/cars/${id}/`, data),
+  deleteCar: (id) => api.delete(`/cars/${id}/`),
 };
 
 export const bookingService = {
@@ -26,7 +28,6 @@ export const bookingService = {
 export const authService = {
   login: (username, password) => api.post('/api-token-auth/', { username, password }),
   register: (userData) => api.post('/register/', userData),
-  getProfile: () => api.get('/profile/'),
 };
 
 export default api;

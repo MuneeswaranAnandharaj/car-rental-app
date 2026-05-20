@@ -4,16 +4,22 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
 
+const CATEGORIES = ['SEDAN', 'SUV', 'TRUCK', 'COUPE', 'HATCHBACK', 'VAN'];
+
 const AdminDashboard = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
+  const [cars, setCars] = useState([]);
   const [tab, setTab] = useState('bookings');
   const [loading, setLoading] = useState(true);
   const [pwForm, setPwForm] = useState({ old: '', new: '', confirm: '' });
   const [pwLoading, setPwLoading] = useState(false);
+  const [showCarForm, setShowCarForm] = useState(false);
+  const [editingCar, setEditingCar] = useState(null);
+  const [carForm, setCarForm] = useState({ make: '', model: '', year: '', category: 'SEDAN', price_per_day: '', is_available: true });
 
   useEffect(() => { fetchData(); }, []);
 
@@ -33,6 +39,15 @@ const AdminDashboard = () => {
       showToast(err.response?.data?.detail || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCars = async () => {
+    try {
+      const res = await api.get('/cars/');
+      setCars(res.data);
+    } catch (err) {
+      showToast('Failed to load cars');
     }
   };
 
@@ -93,6 +108,56 @@ const AdminDashboard = () => {
     }
   };
 
+  const openCarForm = (car = null) => {
+    if (car) {
+      setEditingCar(car);
+      setCarForm({ make: car.make, model: car.model, year: car.year, category: car.category, price_per_day: car.price_per_day, is_available: car.is_available });
+    } else {
+      setEditingCar(null);
+      setCarForm({ make: '', model: '', year: '', category: 'SEDAN', price_per_day: '', is_available: true });
+    }
+    setShowCarForm(true);
+  };
+
+  const handleCarSubmit = async (e) => {
+    e.preventDefault();
+    const payload = { ...carForm, year: parseInt(carForm.year), price_per_day: parseFloat(carForm.price_per_day) };
+    try {
+      if (editingCar) {
+        await api.patch(`/cars/${editingCar.id}/`, payload);
+        showToast('Car updated');
+      } else {
+        await api.post('/cars/', payload);
+        showToast('Car created');
+      }
+      setShowCarForm(false);
+      fetchCars();
+    } catch (err) {
+      showToast(err.response?.data?.error || Object.values(err.response?.data || {}).flat().join(', ') || 'Failed to save car');
+    }
+  };
+
+  const deleteCar = async (id) => {
+    if (!window.confirm('Delete this car?')) return;
+    try {
+      await api.delete(`/cars/${id}/`);
+      showToast('Car deleted');
+      fetchCars();
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to delete car');
+    }
+  };
+
+  const toggleCarAvailability = async (car) => {
+    try {
+      await api.patch(`/cars/${car.id}/`, { is_available: !car.is_available });
+      showToast(`Car ${car.is_available ? 'deactivated' : 'activated'}`);
+      fetchCars();
+    } catch (err) {
+      showToast('Failed to toggle availability');
+    }
+  };
+
   if (loading) return <div className="loading">Loading dashboard...</div>;
 
   return (
@@ -112,6 +177,7 @@ const AdminDashboard = () => {
 
       <div className="admin-tabs">
         <button className={`tab-btn ${tab === 'bookings' ? 'active' : ''}`} onClick={() => setTab('bookings')}>Bookings</button>
+        <button className={`tab-btn ${tab === 'cars' ? 'active' : ''}`} onClick={() => { setTab('cars'); fetchCars(); }}>Cars</button>
         {user?.is_superuser && <button className={`tab-btn ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>Users</button>}
         <button className={`tab-btn ${tab === 'password' ? 'active' : ''}`} onClick={() => setTab('password')}>Change Password</button>
       </div>
@@ -143,6 +209,84 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === 'cars' && (
+        <div>
+          <div className="admin-toolbar">
+            <button onClick={() => openCarForm()} className="add-btn">+ Add Car</button>
+          </div>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead><tr><th>ID</th><th>Image</th><th>Make</th><th>Model</th><th>Year</th><th>Category</th><th>Price/Day</th><th>Available</th><th>Actions</th></tr></thead>
+              <tbody>
+                {cars.map(c => (
+                  <tr key={c.id}>
+                    <td>#{c.id}</td>
+                    <td>{c.image_url ? <img src={c.image_url} alt="" className="car-thumb" /> : '-'}</td>
+                    <td>{c.make}</td>
+                    <td>{c.model}</td>
+                    <td>{c.year}</td>
+                    <td>{c.category}</td>
+                    <td>${c.price_per_day}</td>
+                    <td><span className={`status-badge ${c.is_available ? 'completed' : 'failed'}`}>{c.is_available ? 'Yes' : 'No'}</span></td>
+                    <td className="actions-cell">
+                      <button onClick={() => openCarForm(c)} className="btn-primary-sm">Edit</button>
+                      <button onClick={() => toggleCarAvailability(c)} className={`btn-sm ${c.is_available ? 'btn-outline' : 'btn-primary-sm'}`}>{c.is_available ? 'Deactivate' : 'Activate'}</button>
+                      <button onClick={() => deleteCar(c.id)} className="btn-danger-sm">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {showCarForm && (
+            <div className="modal-overlay" onClick={() => setShowCarForm(false)}>
+              <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <h3>{editingCar ? 'Edit Car' : 'Add Car'}</h3>
+                <form onSubmit={handleCarSubmit} className="car-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Make</label>
+                      <input type="text" className="form-input" value={carForm.make} onChange={e => setCarForm({...carForm, make: e.target.value})} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Model</label>
+                      <input type="text" className="form-input" value={carForm.model} onChange={e => setCarForm({...carForm, model: e.target.value})} required />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Year</label>
+                      <input type="number" className="form-input" value={carForm.year} onChange={e => setCarForm({...carForm, year: e.target.value})} required min="1900" max="2027" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Category</label>
+                      <select className="form-input" value={carForm.category} onChange={e => setCarForm({...carForm, category: e.target.value})}>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Price Per Day ($)</label>
+                      <input type="number" step="0.01" className="form-input" value={carForm.price_per_day} onChange={e => setCarForm({...carForm, price_per_day: e.target.value})} required min="0" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Image URL (optional)</label>
+                      <input type="text" className="form-input" placeholder="Paste image URL" />
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" className="submit-btn">{editingCar ? 'Update Car' : 'Add Car'}</button>
+                    <button type="button" onClick={() => setShowCarForm(false)} className="cancel-btn">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
