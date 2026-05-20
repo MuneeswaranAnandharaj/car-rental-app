@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import CarList from './components/cars/CarList';
 import BookingForm from './components/bookings/BookingForm';
 import MyBookings from './components/bookings/MyBookings';
@@ -31,6 +31,7 @@ const ScrollToTop = () => {
 const AppContent = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   const handleLogout = () => {
@@ -51,13 +52,22 @@ const AppContent = () => {
     }
   };
 
+  const goHome = (e) => {
+    e.preventDefault();
+    if (window.location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="app-container">
       <nav className="navbar">
         <div className="nav-content">
           <Link to="/" className="nav-logo">WheelWise</Link>
           <div className="nav-links">
-            <Link to="/" className="nav-link" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Link>
+            <a href="/" onClick={goHome} className="nav-link">Home</a>
             <Link to="/my-bookings" className="nav-link">My Bookings</Link>
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('features'); }} className="nav-link">About Us</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('contact'); }} className="nav-link">Contact</a>
