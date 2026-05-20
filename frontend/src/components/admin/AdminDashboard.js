@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
@@ -7,8 +8,9 @@ import './AdminDashboard.css';
 const CATEGORIES = ['SEDAN', 'SUV', 'TRUCK', 'COUPE', 'HATCHBACK', 'VAN'];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
@@ -87,9 +89,10 @@ const AdminDashboard = () => {
     if (pwForm.new.length < 6) { showToast('Password must be at least 6 characters'); return; }
     setPwLoading(true);
     try {
-      const res = await api.post('/change-password/', { old_password: pwForm.old, new_password: pwForm.new });
-      showToast(res.data.message || 'Password changed');
-      setPwForm({ old: '', new: '', confirm: '' });
+      await api.post('/change-password/', { old_password: pwForm.old, new_password: pwForm.new });
+      logout();
+      showToast('Password changed. Please sign in again.');
+      navigate('/auth');
     } catch (err) {
       showToast(err.response?.data?.error || 'Failed to change password');
     } finally {
