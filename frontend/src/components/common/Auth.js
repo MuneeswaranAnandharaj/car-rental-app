@@ -9,6 +9,7 @@ const Auth = () => {
   const { login } = useAuth();
   const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -18,9 +19,9 @@ const Auth = () => {
     last_name: '',
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -136,6 +137,33 @@ const Auth = () => {
     }
   };
 
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    setSuccess('');
+    if (!formData.username) { setSubmitError('Username is required'); return; }
+    if (!formData.password || formData.password.length < 6) { setSubmitError('Password must be at least 6 characters'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/forgot-password/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.username, new_password: formData.password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      showToast(data.message || 'Password reset successfully!');
+      setSuccess('Password reset successfully! Please sign in.');
+      setIsForgot(false);
+      setIsLogin(true);
+      setFormData({ ...formData, password: '', confirmPassword: '' });
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setErrors({});
@@ -151,15 +179,29 @@ const Auth = () => {
     });
   };
 
+  const openForgot = () => {
+    setIsForgot(true);
+    setErrors({});
+    setSubmitError('');
+    setSuccess('');
+    setFormData({ ...formData, password: '', confirmPassword: '' });
+  };
+
+  const closeForgot = () => {
+    setIsForgot(false);
+    setSubmitError('');
+    setSuccess('');
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
           <h1 className="auth-title">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isForgot ? 'Reset Password' : (isLogin ? 'Welcome Back' : 'Create Account')}
           </h1>
           <p className="auth-subtitle">
-            {isLogin ? 'Sign in to continue' : 'Join us today'}
+            {isForgot ? 'Enter your username and new password' : (isLogin ? 'Sign in to continue' : 'Join us today')}
           </p>
         </div>
 
@@ -175,112 +217,89 @@ const Auth = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label className="form-label">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className={`form-input ${errors.username ? 'error' : ''}`}
-              placeholder="Enter your username"
-            />
-            {errors.username && <p className="error-text">{errors.username}</p>}
-          </div>
-
-          {!isLogin && (
-            <>
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`form-input ${errors.email ? 'error' : ''}`}
-                  placeholder="Enter your email"
-                />
-                {errors.email && <p className="error-text">{errors.email}</p>}
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">First Name</label>
-                  <input
-                    type="text"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleChange}
-                    className={`form-input ${errors.first_name ? 'error' : ''}`}
-                    placeholder="First name"
-                  />
-                  {errors.first_name && <p className="error-text">{errors.first_name}</p>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Last Name</label>
-                  <input
-                    type="text"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleChange}
-                    className={`form-input ${errors.last_name ? 'error' : ''}`}
-                    placeholder="Last name"
-                  />
-                  {errors.last_name && <p className="error-text">{errors.last_name}</p>}
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`form-input ${errors.password ? 'error' : ''}`}
-              placeholder="Enter your password"
-            />
-            {errors.password && <p className="error-text">{errors.password}</p>}
-          </div>
-
-          {!isLogin && (
+        {isForgot ? (
+          <form onSubmit={handleForgotSubmit} className="auth-form">
             <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && <p className="error-text">{errors.confirmPassword}</p>}
+              <label className="form-label">Username</label>
+              <input type="text" name="username" value={formData.username} onChange={handleChange} className={`form-input ${errors.username ? 'error' : ''}`} placeholder="Enter your username" />
+              {errors.username && <p className="error-text">{errors.username}</p>}
             </div>
-          )}
+            <div className="form-group">
+              <label className="form-label">New Password</label>
+              <input type="password" name="password" value={formData.password} onChange={handleChange} className={`form-input ${errors.password ? 'error' : ''}`} placeholder="Enter new password" />
+              {errors.password && <p className="error-text">{errors.password}</p>}
+            </div>
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? 'Resetting...' : 'Reset Password'}
+            </button>
+            <button type="button" onClick={closeForgot} className="toggle-btn" style={{marginTop: '1rem', width: '100%', textAlign: 'center'}}>
+              Back to Sign In
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label className="form-label">Username</label>
+              <input type="text" name="username" value={formData.username} onChange={handleChange} className={`form-input ${errors.username ? 'error' : ''}`} placeholder="Enter your username" />
+              {errors.username && <p className="error-text">{errors.username}</p>}
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="submit-btn"
-          >
-            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
-          </button>
-        </form>
+            {!isLogin && (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleChange} className={`form-input ${errors.email ? 'error' : ''}`} placeholder="Enter your email" />
+                  {errors.email && <p className="error-text">{errors.email}</p>}
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">First Name</label>
+                    <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} className={`form-input ${errors.first_name ? 'error' : ''}`} placeholder="First name" />
+                    {errors.first_name && <p className="error-text">{errors.first_name}</p>}
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Last Name</label>
+                    <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} className={`form-input ${errors.last_name ? 'error' : ''}`} placeholder="Last name" />
+                    {errors.last_name && <p className="error-text">{errors.last_name}</p>}
+                  </div>
+                </div>
+              </>
+            )}
 
-        <div className="auth-toggle">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <button
-            type="button"
-            onClick={toggleMode}
-            className="toggle-btn"
-          >
-            {isLogin ? 'Register' : 'Sign In'}
-          </button>
-        </div>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input type="password" name="password" value={formData.password} onChange={handleChange} className={`form-input ${errors.password ? 'error' : ''}`} placeholder="Enter your password" />
+              {errors.password && <p className="error-text">{errors.password}</p>}
+            </div>
+
+            {!isLogin && (
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className={`form-input ${errors.confirmPassword ? 'error' : ''}`} placeholder="Confirm your password" />
+                {errors.confirmPassword && <p className="error-text">{errors.confirmPassword}</p>}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+            </button>
+
+            {isLogin && (
+              <button type="button" onClick={openForgot} className="forgot-link">
+                Forgot Password?
+              </button>
+            )}
+          </form>
+        )}
+
+        {!isForgot && (
+          <div className="auth-toggle">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+            <button type="button" onClick={toggleMode} className="toggle-btn">
+              {isLogin ? 'Register' : 'Sign In'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

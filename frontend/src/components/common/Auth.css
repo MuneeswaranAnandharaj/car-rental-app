@@ -181,3 +181,22 @@
 .toggle-btn:hover {
   color: var(--accent-light);
 }
+
+.forgot-link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 0.8rem;
+  font-family: inherit;
+  text-decoration: underline;
+}
+
+.forgot-link:hover {
+  color: var(--accent-light);
+}

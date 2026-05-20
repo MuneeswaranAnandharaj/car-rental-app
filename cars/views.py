@@ -97,6 +97,24 @@ def change_password(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def forgot_password(request):
+    username = request.data.get('username')
+    new_password = request.data.get('new_password')
+    if not username or not new_password:
+        return Response({'error': 'Username and new password required'}, status=400)
+    if len(new_password) < 6:
+        return Response({'error': 'Password must be at least 6 characters'}, status=400)
+    try:
+        user = User.objects.get(username=username)
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password reset successfully! Please sign in.'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register_user(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
