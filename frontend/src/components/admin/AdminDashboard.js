@@ -88,7 +88,11 @@ const AdminDashboard = () => {
     setPwLoading(true);
     try {
       const res = await api.post('/change-password/', { old_password: pwForm.old, new_password: pwForm.new });
-      showToast(res.data.message || 'Password changed');
+      const token = localStorage.getItem('token');
+      if (res.data.token && res.data.token !== token) {
+        localStorage.setItem('token', res.data.token);
+      }
+      showToast('Password changed successfully');
       setPwForm({ old: '', new: '', confirm: '' });
     } catch (err) {
       showToast(err.response?.data?.error || 'Failed to change password');
