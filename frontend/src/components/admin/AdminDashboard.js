@@ -28,21 +28,31 @@ const AdminDashboard = () => {
         setUsers(u.data);
       }
     } catch (err) {
-      console.error(err);
+      showToast(err.response?.data?.detail || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
   };
 
   const updateStatus = async (id, status) => {
-    await api.patch(`/admin/bookings/${id}/`, { payment_status: status });
-    fetchData();
+    try {
+      await api.patch(`/admin/bookings/${id}/`, { payment_status: status });
+      showToast('Booking status updated');
+      fetchData();
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to update status');
+    }
   };
 
   const deleteBooking = async (id) => {
     if (!window.confirm('Delete this booking?')) return;
-    await api.delete(`/admin/bookings/${id}/delete/`);
-    fetchData();
+    try {
+      await api.delete(`/admin/bookings/${id}/delete/`);
+      showToast('Booking deleted');
+      fetchData();
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to delete booking');
+    }
   };
 
   const toggleStaff = async (id, isStaff) => {
@@ -56,8 +66,13 @@ const AdminDashboard = () => {
 
   const deleteUser = async (id) => {
     if (!window.confirm('Delete this user?')) return;
-    await api.delete(`/admin/users/${id}/delete/`);
-    fetchData();
+    try {
+      await api.delete(`/admin/users/${id}/delete/`);
+      showToast('User deleted');
+      fetchData();
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to delete user');
+    }
   };
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
