@@ -12,6 +12,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [tab, setTab] = useState('bookings');
   const [loading, setLoading] = useState(true);
+  const [pwForm, setPwForm] = useState({ old: '', new: '', confirm: '' });
+  const [pwLoading, setPwLoading] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -64,6 +66,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleChangePw = async (e) => {
+    e.preventDefault();
+    if (pwForm.new !== pwForm.confirm) { showToast('Passwords do not match'); return; }
+    if (pwForm.new.length < 6) { showToast('Password must be at least 6 characters'); return; }
+    setPwLoading(true);
+    try {
+      const res = await api.post('/change-password/', { old_password: pwForm.old, new_password: pwForm.new });
+      showToast(res.data.message || 'Password changed');
+      setPwForm({ old: '', new: '', confirm: '' });
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
   const deleteUser = async (id) => {
     if (!window.confirm('Delete this user?')) return;
     try {
@@ -95,6 +113,7 @@ const AdminDashboard = () => {
       <div className="admin-tabs">
         <button className={`tab-btn ${tab === 'bookings' ? 'active' : ''}`} onClick={() => setTab('bookings')}>Bookings</button>
         {user?.is_superuser && <button className={`tab-btn ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>Users</button>}
+        <button className={`tab-btn ${tab === 'password' ? 'active' : ''}`} onClick={() => setTab('password')}>Change Password</button>
       </div>
 
       {tab === 'bookings' && (
@@ -150,6 +169,27 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === 'password' && (
+        <div className="pw-card">
+          <h3>Change Password</h3>
+          <form onSubmit={handleChangePw} className="pw-form">
+            <div className="form-group">
+              <label className="form-label">Current Password</label>
+              <input type="password" className="form-input" value={pwForm.old} onChange={e => setPwForm({...pwForm, old: e.target.value})} required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">New Password</label>
+              <input type="password" className="form-input" value={pwForm.new} onChange={e => setPwForm({...pwForm, new: e.target.value})} required minLength={6} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Confirm New Password</label>
+              <input type="password" className="form-input" value={pwForm.confirm} onChange={e => setPwForm({...pwForm, confirm: e.target.value})} required minLength={6} />
+            </div>
+            <button type="submit" className="submit-btn" disabled={pwLoading}>{pwLoading ? 'Changing...' : 'Change Password'}</button>
+          </form>
         </div>
       )}
     </div>

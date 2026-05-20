@@ -8,7 +8,7 @@ from django.db.models import Sum, Count, Q
 from .models import Car, Booking
 from .serializers import CarSerializer, BookingSerializer, UserSerializer, UserListSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 
 User = get_user_model()
 
@@ -77,6 +77,22 @@ class BookingViewSet(viewsets.ModelViewSet):
         if booking.user != request.user:
             return Response({'error': 'You can only cancel your own bookings'}, status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    old = request.data.get('old_password')
+    new = request.data.get('new_password')
+    if not old or not new:
+        return Response({'error': 'Old and new password required'}, status=400)
+    if not request.user.check_password(old):
+        return Response({'error': 'Current password is incorrect'}, status=400)
+    if len(new) < 6:
+        return Response({'error': 'New password must be at least 6 characters'}, status=400)
+    request.user.set_password(new)
+    request.user.save()
+    return Response({'message': 'Password changed successfully'})
 
 
 @api_view(['POST'])
