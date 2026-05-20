@@ -5,6 +5,10 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.db.models import Sum, Count, Q
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.conf import settings
 from .models import Car, Booking
 from .serializers import CarSerializer, BookingSerializer, UserSerializer, UserListSerializer
 from rest_framework.decorators import api_view, permission_classes
@@ -96,22 +100,55 @@ def change_password(request):
     return Response({'message': 'Password changed successfully. Please sign in again.'})
 
 
+token_generator = PasswordResetTokenGenerator()
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def forgot_password(request):
-    username = request.data.get('username')
+def request_password_reset(request):
+    email = request.data.get('email', '').strip()
+    if not email:
+        return Response({'error': 'Email is required'}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({'message': 'If an account with that email exists, a reset link has been sent.'})
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = token_generator.make_token(user)
+    reset_url = f"{request.scheme}://{request.get_host()}/auth?reset=1&uid={uid}&token={token}"
+
+    if settings.DEBUG:
+        return Response({'message': 'Password reset link generated.', 'reset_url': reset_url, 'uid': uid, 'token': token})
+    return Response({'message': 'If an account with that email exists, a reset link has been sent.'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    uid = request.data.get('uid')
+    token = request.data.get('token')
     new_password = request.data.get('new_password')
-    if not username or not new_password:
-        return Response({'error': 'Username and new password required'}, status=400)
+
+    if not uid or not token or not new_password:
+        return Response({'error': 'uid, token, and new_password are required'}, status=400)
     if len(new_password) < 6:
         return Response({'error': 'Password must be at least 6 characters'}, status=400)
+
     try:
-        user = User.objects.get(username=username)
-        user.set_password(new_password)
-        user.save()
-        return Response({'message': 'Password reset successfully! Please sign in.'})
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
+        uid_str = force_str(urlsafe_base64_decode(uid))
+        user = User.objects.get(pk=uid_str)
+    except (User.DoesNotExist, ValueError, TypeError):
+        return Response({'error': 'Invalid reset link'}, status=400)
+
+    if not token_generator.check_token(user, token):
+        return Response({'error': 'Invalid or expired reset link'}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+    Token.objects.filter(user=user).delete()
+    return Response({'message': 'Password reset successfully. Please sign in with your new password.'})
 
 
 @api_view(['POST'])

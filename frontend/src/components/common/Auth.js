@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import './Auth.css';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
+  const [forgotStep, setForgotStep] = useState('email');
+  const [resetToken, setResetToken] = useState(null);
+  const [resetUid, setResetUid] = useState(null);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,6 +26,19 @@ const Auth = () => {
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('reset') === '1') {
+      const uid = searchParams.get('uid');
+      const token = searchParams.get('token');
+      if (uid && token) {
+        setResetUid(uid);
+        setResetToken(token);
+        setIsForgot(true);
+        setForgotStep('reset');
+      }
+    }
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -141,22 +158,43 @@ const Auth = () => {
     e.preventDefault();
     setSubmitError('');
     setSuccess('');
-    if (!formData.username) { setSubmitError('Username is required'); return; }
-    if (!formData.password || formData.password.length < 6) { setSubmitError('Password must be at least 6 characters'); return; }
     setLoading(true);
+
     try {
-      const res = await fetch('http://localhost:8000/api/forgot-password/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: formData.username, new_password: formData.password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      showToast(data.message || 'Password reset successfully!');
-      setSuccess('Password reset successfully! Please sign in.');
-      setIsForgot(false);
-      setIsLogin(true);
-      setFormData({ ...formData, password: '', confirmPassword: '' });
+      if (forgotStep === 'email') {
+        if (!formData.email) { throw new Error('Email is required'); }
+        const res = await fetch('http://localhost:8000/api/request-password-reset/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+
+        if (data.reset_url) {
+          setResetUid(data.uid);
+          setResetToken(data.token);
+          setSuccess('Reset link generated. Proceed to set your new password.');
+          setForgotStep('reset');
+        } else {
+          showToast('If an account with that email exists, a reset link has been sent.');
+          setSuccess('If an account with that email exists, a reset link has been sent.');
+        }
+      } else {
+        if (!formData.password || formData.password.length < 6) { throw new Error('Password must be at least 6 characters'); }
+        if (formData.password !== formData.confirmPassword) { throw new Error('Passwords do not match'); }
+        const res = await fetch('http://localhost:8000/api/reset-password/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: resetUid, token: resetToken, new_password: formData.password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        showToast('Password reset successfully! Please sign in.');
+        setIsForgot(false);
+        setIsLogin(true);
+        setFormData({ password: '', confirmPassword: '', email: '' });
+      }
     } catch (err) {
       setSubmitError(err.message);
     } finally {
@@ -181,10 +219,13 @@ const Auth = () => {
 
   const openForgot = () => {
     setIsForgot(true);
+    setForgotStep('email');
+    setResetToken(null);
+    setResetUid(null);
     setErrors({});
     setSubmitError('');
     setSuccess('');
-    setFormData({ ...formData, password: '', confirmPassword: '' });
+    setFormData({ ...formData, password: '', confirmPassword: '', email: '' });
   };
 
   const closeForgot = () => {
@@ -198,10 +239,10 @@ const Auth = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h1 className="auth-title">
-            {isForgot ? 'Reset Password' : (isLogin ? 'Welcome Back' : 'Create Account')}
+            {isForgot ? (forgotStep === 'email' ? 'Forgot Password' : 'Reset Password') : (isLogin ? 'Welcome Back' : 'Create Account')}
           </h1>
           <p className="auth-subtitle">
-            {isForgot ? 'Enter your username and new password' : (isLogin ? 'Sign in to continue' : 'Join us today')}
+            {isForgot ? (forgotStep === 'email' ? 'Enter your email to receive a reset link' : 'Enter your new password') : (isLogin ? 'Sign in to continue' : 'Join us today')}
           </p>
         </div>
 
@@ -219,19 +260,32 @@ const Auth = () => {
 
         {isForgot ? (
           <form onSubmit={handleForgotSubmit} className="auth-form">
-            <div className="form-group">
-              <label className="form-label">Username</label>
-              <input type="text" name="username" value={formData.username} onChange={handleChange} className={`form-input ${errors.username ? 'error' : ''}`} placeholder="Enter your username" />
-              {errors.username && <p className="error-text">{errors.username}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">New Password</label>
-              <input type="password" name="password" value={formData.password} onChange={handleChange} className={`form-input ${errors.password ? 'error' : ''}`} placeholder="Enter new password" />
-              {errors.password && <p className="error-text">{errors.password}</p>}
-            </div>
-            <button type="submit" disabled={loading} className="submit-btn">
-              {loading ? 'Resetting...' : 'Reset Password'}
-            </button>
+            {forgotStep === 'email' ? (
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className={`form-input ${errors.email ? 'error' : ''}`} placeholder="Enter your registered email" />
+                {errors.email && <p className="error-text">{errors.email}</p>}
+                <button type="submit" disabled={loading} className="submit-btn" style={{marginTop: '1rem'}}>
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label className="form-label">New Password</label>
+                  <input type="password" name="password" value={formData.password} onChange={handleChange} className={`form-input ${errors.password ? 'error' : ''}`} placeholder="Enter new password" />
+                  {errors.password && <p className="error-text">{errors.password}</p>}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password</label>
+                  <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className={`form-input ${errors.confirmPassword ? 'error' : ''}`} placeholder="Confirm new password" />
+                  {errors.confirmPassword && <p className="error-text">{errors.confirmPassword}</p>}
+                </div>
+                <button type="submit" disabled={loading} className="submit-btn">
+                  {loading ? 'Resetting...' : 'Reset Password'}
+                </button>
+              </>
+            )}
             <button type="button" onClick={closeForgot} className="toggle-btn" style={{marginTop: '1rem', width: '100%', textAlign: 'center'}}>
               Back to Sign In
             </button>

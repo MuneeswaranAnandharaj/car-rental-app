@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CarViewSet, BookingViewSet, register_user, login_user, change_password, forgot_password, admin_dashboard, admin_bookings, admin_update_booking, admin_delete_booking, admin_users, admin_update_user, admin_delete_user
+from .views import CarViewSet, BookingViewSet, register_user, login_user, change_password, request_password_reset, reset_password, admin_dashboard, admin_bookings, admin_update_booking, admin_delete_booking, admin_users, admin_update_user, admin_delete_user
 
 
 router = DefaultRouter()
@@ -13,7 +13,8 @@ urlpatterns = [
     path('register/', register_user),
     path('api-token-auth/', login_user),
     path('change-password/', change_password),
-    path('forgot-password/', forgot_password),
+    path('request-password-reset/', request_password_reset),
+    path('reset-password/', reset_password),
     path('admin/dashboard/', admin_dashboard),
     path('admin/bookings/', admin_bookings),
     path('admin/bookings/<int:pk>/', admin_update_booking),
