@@ -4,6 +4,7 @@ import CarList from './components/cars/CarList';
 import BookingForm from './components/bookings/BookingForm';
 import MyBookings from './components/bookings/MyBookings';
 import Auth from './components/common/Auth';
+import AdminDashboard from './components/admin/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { ToastProvider, useToast } from './context/ToastContext';
@@ -12,6 +13,13 @@ import './App.css';
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/auth" />;
+};
+
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/auth" />;
+  if (!user?.is_staff) return <Navigate to="/" />;
+  return children;
 };
 
 const ScrollToTop = () => {
@@ -65,6 +73,7 @@ const AppContent = () => {
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('contact'); }} className="nav-link">Contact</a>
             {isAuthenticated ? (
               <>
+                {user?.is_staff && <Link to="/admin" className="nav-link">Admin</Link>}
                 <span className="nav-user">Hi, {user?.username}</span>
                 <button onClick={handleLogout} className="nav-btn">Sign Out</button>
               </>
@@ -84,6 +93,7 @@ const AppContent = () => {
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
         <Route path="/cars/:carId" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
         <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
 
       <footer className="footer" id="contact">

@@ -6,6 +6,17 @@ from .models import Car, Booking
 User = get_user_model()
 
 
+class UserListSerializer(serializers.ModelSerializer):
+    total_bookings = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined', 'total_bookings']
+
+    def get_total_bookings(self, obj):
+        return obj.bookings.count()
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

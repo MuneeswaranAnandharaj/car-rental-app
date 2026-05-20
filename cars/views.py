@@ -4,10 +4,11 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from django.db.models import Sum, Count, Q
 from .models import Car, Booking
-from .serializers import CarSerializer, BookingSerializer, UserSerializer
+from .serializers import CarSerializer, BookingSerializer, UserSerializer, UserListSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 
 User = get_user_model()
 
@@ -87,8 +88,97 @@ def register_user(request):
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
+            'is_staff': user.is_staff,
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_dashboard(request):
+    total_cars = Car.objects.count()
+    total_users = User.objects.count()
+    total_bookings = Booking.objects.count()
+    total_revenue = Booking.objects.filter(payment_status='COMPLETED').aggregate(s=Sum('total_price'))['s'] or 0
+    pending_bookings = Booking.objects.filter(payment_status='PENDING').count()
+    active_cars = Car.objects.filter(is_available=True).count()
+
+    return Response({
+        'total_cars': total_cars,
+        'total_users': total_users,
+        'total_bookings': total_bookings,
+        'total_revenue': float(total_revenue),
+        'pending_bookings': pending_bookings,
+        'active_cars': active_cars,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_bookings(request):
+    bookings = Booking.objects.select_related('user', 'car').all().order_by('-created_at')
+    serializer = BookingSerializer(bookings, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def admin_update_booking(request, pk):
+    try:
+        booking = Booking.objects.get(pk=pk)
+    except Booking.DoesNotExist:
+        return Response({'error': 'Booking not found'}, status=404)
+    payment_status = request.data.get('payment_status')
+    if payment_status:
+        booking.payment_status = payment_status
+        booking.save()
+    return Response(BookingSerializer(booking).data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def admin_delete_booking(request, pk):
+    try:
+        booking = Booking.objects.get(pk=pk)
+    except Booking.DoesNotExist:
+        return Response({'error': 'Booking not found'}, status=404)
+    booking.delete()
+    return Response({'message': 'Booking deleted'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_users(request):
+    users = User.objects.all().order_by('-date_joined')
+    serializer = UserListSerializer(users, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def admin_update_user(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+    is_staff = request.data.get('is_staff')
+    if is_staff is not None:
+        user.is_staff = is_staff
+        user.save()
+    return Response(UserListSerializer(user).data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def admin_delete_user(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+    if user.is_superuser:
+        return Response({'error': 'Cannot delete superuser'}, status=400)
+    user.delete()
+    return Response({'message': 'User deleted'})
 
 
 @api_view(['POST'])
@@ -105,6 +195,7 @@ def login_user(request):
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
+            'is_staff': user.is_staff,
         })
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 

@@ -93,7 +93,7 @@ const Auth = () => {
         }
 
         const data = await response.json();
-        const userData = { username: formData.username, email: '' };
+        const userData = { username: formData.username, email: '', is_staff: data.is_staff || false };
         login(data.token, userData);
         showToast('Signed in successfully!');
         setSuccess('Login successful! Redirecting...');
