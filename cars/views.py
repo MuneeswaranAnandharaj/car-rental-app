@@ -20,6 +20,11 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return request.user and request.user.is_staff
 
 
+class IsSuperUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser
+
+
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
     serializer_class = CarSerializer
@@ -89,6 +94,7 @@ def register_user(request):
             'username': user.username,
             'email': user.email,
             'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -147,7 +153,7 @@ def admin_delete_booking(request, pk):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperUser])
 def admin_users(request):
     users = User.objects.all().order_by('-date_joined')
     serializer = UserListSerializer(users, many=True)
@@ -155,7 +161,7 @@ def admin_users(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperUser])
 def admin_update_user(request, pk):
     try:
         user = User.objects.get(pk=pk)
@@ -171,7 +177,7 @@ def admin_update_user(request, pk):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperUser])
 def admin_delete_user(request, pk):
     try:
         user = User.objects.get(pk=pk)
@@ -198,6 +204,7 @@ def login_user(request):
             'username': user.username,
             'email': user.email,
             'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
         })
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 

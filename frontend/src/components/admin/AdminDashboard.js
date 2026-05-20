@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
@@ -15,14 +17,16 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [s, b, u] = await Promise.all([
+      const [s, b] = await Promise.all([
         api.get('/admin/dashboard/'),
         api.get('/admin/bookings/'),
-        api.get('/admin/users/'),
       ]);
       setStats(s.data);
       setBookings(b.data);
-      setUsers(u.data);
+      if (user?.is_superuser) {
+        const u = await api.get('/admin/users/');
+        setUsers(u.data);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -75,7 +79,7 @@ const AdminDashboard = () => {
 
       <div className="admin-tabs">
         <button className={`tab-btn ${tab === 'bookings' ? 'active' : ''}`} onClick={() => setTab('bookings')}>Bookings</button>
-        <button className={`tab-btn ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>Users</button>
+        {user?.is_superuser && <button className={`tab-btn ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>Users</button>}
       </div>
 
       {tab === 'bookings' && (
