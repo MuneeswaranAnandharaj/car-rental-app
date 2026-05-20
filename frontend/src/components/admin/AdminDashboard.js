@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const { showToast } = useToast();
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
@@ -40,8 +42,12 @@ const AdminDashboard = () => {
   };
 
   const toggleStaff = async (id, isStaff) => {
-    await api.patch(`/admin/users/${id}/`, { is_staff: !isStaff });
-    fetchData();
+    try {
+      await api.patch(`/admin/users/${id}/`, { is_staff: !isStaff });
+      fetchData();
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to update');
+    }
   };
 
   const deleteUser = async (id) => {

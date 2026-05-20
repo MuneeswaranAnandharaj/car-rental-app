@@ -163,6 +163,8 @@ def admin_update_user(request, pk):
         return Response({'error': 'User not found'}, status=404)
     is_staff = request.data.get('is_staff')
     if is_staff is not None:
+        if int(pk) == request.user.id and is_staff is False:
+            return Response({'error': 'You cannot revoke your own admin'}, status=400)
         user.is_staff = is_staff
         user.save()
     return Response(UserListSerializer(user).data)
