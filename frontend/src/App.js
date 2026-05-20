@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/auth" />;
-  if (!user?.is_staff) return <Navigate to="/" />;
+  if (!user?.is_staff && !user?.is_superuser) return <Navigate to="/" />;
   return children;
 };
 
@@ -73,7 +73,7 @@ const AppContent = () => {
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('contact'); }} className="nav-link">Contact</a>
             {isAuthenticated ? (
               <>
-                {user?.is_staff && <Link to="/admin" className="nav-link">Admin</Link>}
+                {(user?.is_staff || user?.is_superuser) && <Link to="/admin" className="nav-link">Admin</Link>}
                 <span className="nav-user">Hi, {user?.username}</span>
                 <button onClick={handleLogout} className="nav-btn">Sign Out</button>
               </>
