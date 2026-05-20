@@ -105,21 +105,24 @@ const AppContent = () => {
           <div className="footer-col">
             <h4>Quick Links</h4>
             <Link to="/">Home</Link>
-            <Link to="/my-bookings">My Bookings</Link>
-            <Link to="/auth">Sign In</Link>
+            {isAuthenticated ? (
+              <Link to="/my-bookings">My Bookings</Link>
+            ) : (
+              <Link to="/auth">Sign In</Link>
+            )}
           </div>
           <div className="footer-col">
             <h4>Car Types</h4>
-            <a href="#sedan">Sedan</a>
-            <a href="#suv">SUV</a>
-            <a href="#coupe">Coupe</a>
-            <a href="#truck">Truck</a>
+            <a href="#cars" onClick={(e) => { e.preventDefault(); scrollTo('cars'); }}>Sedan</a>
+            <a href="#cars" onClick={(e) => { e.preventDefault(); scrollTo('cars'); }}>SUV</a>
+            <a href="#cars" onClick={(e) => { e.preventDefault(); scrollTo('cars'); }}>Coupe</a>
+            <a href="#cars" onClick={(e) => { e.preventDefault(); scrollTo('cars'); }}>Truck</a>
           </div>
           <div className="footer-col">
             <h4>Contact</h4>
             <a href="mailto:support@wheelwise.com">support@wheelwise.com</a>
             <a href="tel:+1234567890">+1 (234) 567-890</a>
-            <a href="#map">123 Main St, New York</a>
+            <a href="#contact">123 Main St, New York</a>
           </div>
         </div>
         <div className="footer-bottom">
