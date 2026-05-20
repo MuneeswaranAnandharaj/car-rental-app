@@ -68,8 +68,7 @@ const MapPicker = ({ onLocationSelect, initialPosition = [40.7128, -74.0060] }) 
     mapInstance.current = map;
     markerRef.current = marker;
 
-    // Set default address on init
-    updateLocation(initialPosition[0], initialPosition[1]);
+    // Don't set default address - user must click map to select
 
     return () => {
       map.remove();
