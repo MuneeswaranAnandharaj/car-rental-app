@@ -92,8 +92,7 @@ def change_password(request):
         return Response({'error': 'New password must be at least 6 characters'}, status=400)
     request.user.set_password(new)
     request.user.save()
-    token, _ = Token.objects.get_or_create(user=request.user)
-    return Response({'message': 'Password changed successfully', 'token': token.key})
+    return Response({'message': 'Password changed successfully'})
 
 
 @api_view(['POST'])
